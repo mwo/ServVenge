@@ -1,8 +1,6 @@
 const express = require('express'),
     app = express(),
-    server = require('http').Server(app),
-    WebSocket = require('ws'),
-    msgpack = require('msgpack-lite');
+    server = require('http').Server(app);
 
 //const Ac = require('./ac.js');
 

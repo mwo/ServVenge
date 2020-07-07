@@ -1,3 +1,6 @@
+const WebSocket = require('ws'),
+msgpack = require('msgpack-lite');
+
 module.exports = class Serv {
     constructor(server) {
         this.server = server;
