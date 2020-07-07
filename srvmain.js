@@ -128,7 +128,7 @@ module.exports = class Serv {
                         },
                         kill: (w, args, emit) => {
                             if (w.admin) {
-                                let player = this.players[Object.keys(this.players).find(e => e.username.includes(args[1]))];
+                                let player = this.findPlayer(args[1]);
                                 if (player) {
                                     this.damage(w.id, player.playerId, 100, true, emit)
                                 } else {
@@ -140,8 +140,8 @@ module.exports = class Serv {
                         },
                         kick: (w, args, emit) => {
                             if (w.admin) {
-                                let player = this.players[this.players.list.find(e => e.includes(args[1]))];
-                                if (player && player.playerId != 1) {
+                                let player = this.findPlayer(args[1]);
+                                if (player) {
                                     let pws = this.getWs(player.playerId);
                                     pws.send('info', 'You were kicked for: ' + args.slice(2).join(' '));
                                     pws.close();
@@ -242,8 +242,10 @@ module.exports = class Serv {
                 let prop = this.votes[msg[0]]
                 if (prop) prop++;
             },
-            guard: (ws, emit, msg) => {
-                if (!msg[1]) {
+            guard: (ws, _, msg, emit) => {
+                let player = this.getPlayer(ws.id);
+                if (!msg[1] && player) {
+                    emit('chat', 'console', `${player.username}, Was kicked for suspsisious activity`);
                     ws.send('info', 'You were kicked for: ' + "Cheating");
                     ws.close()
                 }
@@ -270,6 +272,10 @@ module.exports = class Serv {
 
     getDist(a, b, c, d) {
         return Math.sqrt(Math.abs(a - c) ** 2 + Math.abs(b - d) ** 2)
+    }
+
+    findPlayer(segment) {
+        return this.players[Object.values(this.players).find(e => e.username.includes(segment)).name];
     }
 
     getPList() {
