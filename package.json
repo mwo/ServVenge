@@ -1,0 +1,14 @@
+{
+    "name": "vengeserver",
+    "version": "0.0.1",
+    "description": "My venge private server",
+    "main" : "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "ws": "7.3.0",
+        "msgpack-lite": "0.1.26"
+    },
+    "license": "MIT"
+}

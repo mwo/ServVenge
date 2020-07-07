@@ -1,5 +1,4 @@
-const fs = require('fs'),
-    https = require('https'),
+const https = require('https'),
     WebSocket = require('ws'),
     msgpack = require('msgpack-lite');
 
@@ -7,10 +6,7 @@ const Ac = require('./ac.js');
 
 require('colors');
 
-const server = https.createServer({
-    cert: fs.readFileSync('137.25.145.202.pem'),
-    key: fs.readFileSync('137.25.145.202-key.pem')
-});
+const server = https.createServer();
 
 class Serv {
     constructor() {
@@ -552,4 +548,4 @@ class Serv {
 
 let sv = new Serv();
 sv.init();
-server.listen(25565);
+server.listen(443);
