@@ -2,13 +2,14 @@
     "name": "vengeserver",
     "version": "0.0.1",
     "description": "My venge private server",
-    "main" : "server.js",
+    "main": "server.js",
     "scripts": {
         "start": "node server.js"
     },
     "dependencies": {
-        "ws": "7.3.0",
-        "msgpack-lite": "0.1.26"
+        "express": "^4.17.1",
+        "msgpack-lite": "0.1.26",
+        "ws": "7.3.0"
     },
     "license": "MIT"
 }

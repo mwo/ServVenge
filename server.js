@@ -1,4 +1,7 @@
-const WebSocket = require('ws'),
+const express = require('express'),
+    app = express(),
+    server = require('http').Server(app),
+    WebSocket = require('ws'),
     msgpack = require('msgpack-lite');
 
 const Ac = require('./ac.js');
@@ -479,8 +482,8 @@ class Serv {
     }
 
     init() {
-        this.wss = new WebSocket.Server({
-            port: process.env.PORT
+        module.exports.io = this.wss = new WebSocket.Server({
+            server
         });
 
         let bcAll = (...data) => {
@@ -545,4 +548,4 @@ class Serv {
 
 let sv = new Serv();
 sv.init();
-server.listen(443);
+server.listen(process.env.PORT || 443);
