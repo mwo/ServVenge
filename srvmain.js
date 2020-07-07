@@ -128,7 +128,7 @@ module.exports = class Serv {
                         },
                         kill: (w, args, emit) => {
                             if (w.admin) {
-                                let player = this.players[this.players.list.find(e => e.includes(args[1]))];
+                                let player = this.players[Object.keys(this.players).find(e => e.username.includes(args[1]))];
                                 if (player) {
                                     this.damage(w.id, player.playerId, 100, true, emit)
                                 } else {
