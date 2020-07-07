@@ -480,7 +480,7 @@ class Serv {
 
     init() {
         this.wss = new WebSocket.Server({
-            port: 443
+            port: process.env.PORT
         });
 
         let bcAll = (...data) => {
