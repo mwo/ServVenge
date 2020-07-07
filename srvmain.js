@@ -73,6 +73,7 @@ module.exports = class Serv {
                     playerId: id,
                     verified: true,
                     id: id,
+                    name: name, // keep copy of original
                     username: name,
                     team: "none",
                     skin: msg[3],
@@ -478,7 +479,7 @@ module.exports = class Serv {
 
     init() {
         let server = this.server;
-        module.exports.io = this.wss = new WebSocket.Server({
+        this.wss = new WebSocket.Server({
             server
         });
 
@@ -520,7 +521,7 @@ module.exports = class Serv {
                 let player = this.getPlayer(ws.id);
                 
                 if (player) {
-                    let name = player.username;
+                    let name = player.name;
                     broadCast('left', ws.id);
                     console.log('Left '.red + '->', ws.id, name)
                     delete this.players[name];
