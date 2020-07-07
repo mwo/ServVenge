@@ -143,7 +143,7 @@ module.exports = class Serv {
                                 let player = this.findPlayer(args[1]);
                                 if (player) {
                                     let pws = this.getWs(player.playerId);
-                                    pws.send('info', 'You were kicked for: ' + args.slice(2).join(' '));
+                                    pws.send('kick', args.slice(2).join(' '));
                                     pws.close();
                                 } else {
                                     clog("Player does not exist");
@@ -246,7 +246,7 @@ module.exports = class Serv {
                 let player = this.getPlayer(ws.id);
                 if (!msg[1] && player) {
                     emit('chat', 'console', `${player.username}, Was kicked for suspsisious activity`);
-                    ws.send('info', 'You were kicked for: ' + "Cheating");
+                    ws.send('kick', "Cheating");
                     ws.close()
                 }
             },
@@ -275,7 +275,8 @@ module.exports = class Serv {
     }
 
     findPlayer(segment) {
-        return this.players[Object.values(this.players).find(e => e.username.includes(segment)).name];
+        let key = Object.values(this.players).find(e => e.username ? e.username.includes(segment) : false).name;
+        return this.players[key] ? this.players[key] : null;
     }
 
     getPList() {
