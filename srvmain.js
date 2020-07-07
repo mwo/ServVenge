@@ -477,9 +477,9 @@ module.exports = class Serv {
     }
 
     init() {
-        let _server = this.server;
+        let server = this.server;
         module.exports.io = this.wss = new WebSocket.Server({
-            _server
+            server
         });
 
         let bcAll = (...data) => {
