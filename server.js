@@ -1,12 +1,9 @@
-const https = require('https'),
-    WebSocket = require('ws'),
+const WebSocket = require('ws'),
     msgpack = require('msgpack-lite');
 
 const Ac = require('./ac.js');
 
 require('colors');
-
-const server = https.createServer();
 
 class Serv {
     constructor() {
@@ -483,7 +480,7 @@ class Serv {
 
     init() {
         this.wss = new WebSocket.Server({
-            server
+            port: 443
         });
 
         let bcAll = (...data) => {
