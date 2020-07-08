@@ -1,5 +1,6 @@
 const WebSocket = require('ws'),
-msgpack = require('msgpack-lite');
+    msgpack = require('msgpack-lite'),
+    Ac = require('./ac.js');
 
 module.exports = class Serv {
     constructor(server) {
@@ -7,7 +8,7 @@ module.exports = class Serv {
 
         this.wss;
 
-        this.adminPass = "myBrainIsFat";
+        this.adminPass = "2424";
 
         this.count = 0;
 
@@ -81,15 +82,20 @@ module.exports = class Serv {
                     ...def
                 }
 
-                // new Ac(ws, this.players[name], (w, reason)=> {
-                //     console.log('Detection ->', w.id, reason);
-                // }, console.log)
-
+                
                 ws.send('me', this.players[name]);
                 this.players.list.forEach(e => ws.send('player', this.players[e]));
                 emit('player', this.players[name]);
                 ws.send("mode", "POINT", this.map);
-
+                
+                new Ac(ws, this.players[name], (w, reason)=> {
+                    let player = this.getPlayer(ws.id);
+                    if (!ws.admin && player) {
+                        emit('chat', 'console', `${player.username}, Was kicked for suspsisious activity`);
+                        ws.send('kick', "Cheating");
+                        ws.close();
+                    }
+                }, console.log)
             },
             character: (ws, emit, msg) => {
                 ws.send("character", ...msg.slice(1));
@@ -101,7 +107,11 @@ module.exports = class Serv {
                 emit("respawn", ws.id)
             },
             weapon: (ws, emit, msg) => {
+                let player = this.getPlayer(ws.id);
+                if (!player) return;
+                player.weapon = msg[1];
                 emit('weapon', ws.id, ...msg.slice(1));
+
             },
             point: (ws, _, msg, emit) => {
                 this.getObPoint(ws, 2)
@@ -319,7 +329,7 @@ module.exports = class Serv {
     damagePacket(ws, msg, emit) {
         let info = [...msg.slice(1)],
             iOb = {
-                damage: info[1],
+                damage: info[1] + (info[3] ? 5 : 0), //if its a head shot add 5 damage
                 killer: ws.id,
                 killed: info[0],
                 reason: 'big gay' //light hearted ;)
@@ -335,6 +345,7 @@ module.exports = class Serv {
         //before damage
         if (dPlayer.health <= 0) return;
 
+        //damdage
         dPlayer.health -= iOb.damage;
         emit('h', iOb.killed, dPlayer.health);
 
@@ -460,7 +471,7 @@ module.exports = class Serv {
                         Xibalba: 0
                     };
                     this.time = this.maxTime;
-                }, 15e3)
+                }, 20e3)
             }
 
             //board

@@ -20,13 +20,16 @@ class ssac {
     constructor(ws, plr, callback, debug) {
         //onsend aka incoming
         let send = ws.send;
-        ws.send = this.onsend;
+        ws.send = (...args) => {
+            this.onsend(args);
+            return send.apply(this, args)
+        }
 
         //constructor
         this.ws = ws;
         this.callback = callback;
         this.log = debug;
-        this.immune = false; //for position stuff
+        this.immune = true; //for position stuff
 
         //actual player object from constructor
         this.plr = plr;
@@ -34,8 +37,10 @@ class ssac {
         //damages
         this.damages = {
             Sniper: {
-                headshot: 10,
-                body: 90
+                body: 95
+            },
+            Scar: {
+                body: 15
             }
         }
 
@@ -53,12 +58,7 @@ class ssac {
             },
             speed: 0,
             lastp: null,
-            e: null
-            // e: {
-            //     lastA: !1,
-            //     lastE: !1,
-            //     lastD: !1
-            // }
+            e: ''
         }
 
         this.speedLimit = 3.5; // speed cap
@@ -113,12 +113,18 @@ class ssac {
                 //cant fire unless animation is playing
                 if (!this.player.s.f) this.isc(msg[0]);
 
-                //vars
-                let dmg = msg[2],
-                    weapon = this.damages[this.plr.weapon],
-                    sdmg = weapon.body + (msg[3] ? weapon.headshot : 0);
 
                 //generate server side damage and compare note: (this should be server side anyway)
+                //vars
+                let dmg = msg[2],
+                    weapon = this.damages[this.plr.weapon];
+                
+                //make sure weapon is in damages obj
+                if (!weapon) return;
+
+                let sdmg = weapon.body + (msg[3] ? 5: 0); //calculate damage
+
+                //comparing
                 if (dmg != sdmg) this.isc('Manipulated damage value');
 
             },
@@ -147,14 +153,11 @@ class ssac {
                     k = msg[1],
                     brh = () => this.isc(msg.slice(0, 2).join(' '));
 
-                if (k == 'connected') return;
+                if (k == 'connected') return; //doesn't trigger speed detect on spawn
+                //cant jump more than twice ???? without landing
+                if (p.e.includes('jjj')) brh();
 
-                //cant jump more than once without landing
-                switch(p.e) {
-                    case "j": if (k == p.e) brh(); break;
-                }
-
-                p.e = k;
+                (p.e += k).slice(0, 3);
             },
             weapon: msg => {
                 //type check
@@ -187,7 +190,7 @@ class ssac {
         if (f) f(msg);
     }
 
-    onsend(...msg) {
+    onsend(msg) {
         if (msg[0] == 'respawn' && msg[1] == this.plr.playerId) {
             this.immune = true;
             setTimeout(()=>this.immune = false, 2e3);
@@ -197,38 +200,3 @@ class ssac {
 }
 
 module.exports = ssac;
-        // switch (msg[1]) {
-        //     //checking to make sure client can't jump more than once in the same jump
-        //     case "j":
-        //         p.inAir = true;
-        //         break;
-        //     case "bj":
-        //         p.inAir = true;
-        //         break;
-        //     case "l":
-        //         p.inAir = false;
-        //         break;
-        //     case "emote":
-        //         //making sure client can't emote while emoting
-        //         p.isEmote = true;
-        //         setTimeout(() => p.isEmote = false, 4e3)
-        //         break;
-        //     case "dash":
-        //         //make sure client can't dash before delay is over
-        //         p.dashed = true;
-        //         setTimeout(() => p.dashed = false, 10e3)
-        //         break;
-        // }
-    
-        // //evaluate info for detections
-        // if (
-        //     (this.sComp(c.lastA, p.inAir) && msg[1] != 'l') ||
-        //     this.sComp(c.lastE, p.isEmote) ||
-        //     this.sComp(c.lastD, p.dashed)
-        // ) brh();
-        // this.log('inAir ->', c.lastA, p.inAir);
-        // this.log('isEmote ->', c.lastE, p.isEmote);
-        // this.log('dashed ->', c.lastD, p.dashed, '\n');
-    
-        // //destructive varable declaring / defining
-        // [c.lastA, c.lastE, c.lastD, p.laste] = [p.inAir, p.isEmote, p.dashed, true];
