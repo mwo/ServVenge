@@ -13,7 +13,6 @@ module.exports = class Serv {
         this.count = 0;
 
         this.defualt = {
-            weapon: 'Scar',
             bonus: 0,
             capture: 0,
             rank: 0,
@@ -80,6 +79,7 @@ module.exports = class Serv {
                     team: "none",
                     skin: msg[3],
                     group: id,
+                    weapon: msg[4],
                     ...def
                 }
 
