@@ -73,6 +73,7 @@ module.exports = class Serv {
                 this.players[name] = {
                     playerId: id,
                     verified: true,
+                    kicked: false,
                     id: id,
                     name: name, // keep copy of original
                     username: name,
@@ -92,6 +93,8 @@ module.exports = class Serv {
                     let player = this.getPlayer(w.id);
                     if (!w.admin && player) {
                         console.log(player.username, '->', reason);
+                        if (player.kicked) return;
+                        player.kicked = true;
                         emit('chat', 'console', `${player.username}, Was kicked for suspsisious activity`);
                         ws.send('kick', "Cheating");
                         ws.close();
