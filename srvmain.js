@@ -61,7 +61,7 @@ module.exports = class Serv {
             auth: (ws, emit, msg) => {
                 this.count++;
                 let id = this.count,
-                    name = (msg[2] == "none" ? "Guest " + id : msg[2]).slice(0, 100).replace(/\[ || \]/g, '');
+                    name = (msg[2] == "none" ? "Guest " + id : msg[2]).slice(0, 100).replace(/(\[|\])/g, '');
 
                     
                 ws.id = id;
@@ -100,7 +100,7 @@ module.exports = class Serv {
                         ws.send('kick', "Cheating");
                         ws.close();
                     }
-                }, console.log)
+                })
             },
             character: (ws, emit, msg) => {
                 ws.send("character", ...msg.slice(1));
@@ -203,7 +203,7 @@ module.exports = class Serv {
                         clog("Command does not exist.")
                     }
                 } else {
-                    let c = info.slice(0, 100).replace(/\[ || \]/g, '');
+                    let c = info.slice(0, 100).replace(/(\[|\])/g, '');
                     if (/[a-zA-Z0-9]+/.test(c)) emit("chat", ws.id, c);
                 }
 
@@ -319,10 +319,6 @@ module.exports = class Serv {
 
     getPlayer(id) {
         return this.getPList().find(e => e.playerId == id)
-    }
-
-    replace(arr, key, rep) {
-        return JSON.parse(JSON.stringify(arr).replace(key, rep))
     }
 
     getObPoint(ws, am) {
