@@ -30,7 +30,8 @@ module.exports = class Serv {
             health: 100,
             streak: 0,
             inPoint: !1,
-            lastPos: []
+            lastPos: [],
+            lowhpc: 0
         }
 
         var def = this.defualt;
@@ -120,14 +121,14 @@ module.exports = class Serv {
             point: (ws, _, msg, emit) => {
                 this.getObPoint(ws, 2)
             },
-            chat: (ws, _, msg, emit) => {
+            chat: (ws, broad, msg, emit) => {
                 let info = [...msg.slice(1).map(e => e + [])][0];
 
                 let clog = m => ws.send("chat", 'console', m);
 
                 if (info[0] == "/") {
                     let map = {
-                        admin: (ws, args, emit) => {
+                        admin: (ws, args, _, emit) => {
                             let player = this.getPlayer(ws.id);
                             if (!player) return;
                             let pass = args.slice(1).join(' ');
@@ -197,7 +198,7 @@ module.exports = class Serv {
                     //console.log(args);
                     let fnc = map[chat[0]];
                     if (fnc) {
-                        fnc(ws, chat, emit)
+                        fnc(ws, chat, emit, broad)
                     } else {
                         clog("Command does not exist.")
                     }
@@ -420,6 +421,14 @@ module.exports = class Serv {
         setInterval(() => {
             let player = this.getPlayer(ws.id);
             if (player) player.inPoint = false;
+
+            //health regen
+            if (player.health < 100) player.lowhpc++;
+            if (player.lowhpc >= 10) {
+                player.lowhpc = 0;
+                player.health = 100;
+                ws.send("h", ws.id, player.health);
+            }
         }, 1e3)
     }
 
