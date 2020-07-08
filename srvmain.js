@@ -89,8 +89,9 @@ module.exports = class Serv {
                 ws.send("mode", "POINT", this.map);
                 
                 new Ac(ws, this.players[name], (w, reason)=> {
-                    let player = this.getPlayer(ws.id);
-                    if (!ws.admin && player) {
+                    let player = this.getPlayer(w.id);
+                    if (!w.admin && player) {
+                        console.log(player.username, '->', reason);
                         emit('chat', 'console', `${player.username}, Was kicked for suspsisious activity`);
                         ws.send('kick', "Cheating");
                         ws.close();
@@ -124,9 +125,12 @@ module.exports = class Serv {
                 if (info[0] == "/") {
                     let map = {
                         admin: (ws, args, emit) => {
+                            let player = this.getPlayer(ws.id);
+                            if (!player) return;
                             let pass = args.slice(1).join(' ');
                             ws.admin = ws.admin || pass == this.adminPass;
                             ws.admin ? clog('You are now a admin') : clog('Wrong password');
+                            emit('chat', 'console', '')
                         },
                         flip: (ws, args, emit) => {
                             let l = Math.random() * 2 | 0 ? "Heads" : "Tails";
@@ -134,7 +138,7 @@ module.exports = class Serv {
                         },
                         nick: (w, args, emit) => {
                             let player = this.getPlayer(w.id);
-                            player.username = args[1];
+                            player.username = args.slice(1).join(' ');
                         },
                         kill: (w, args, emit) => {
                             if (w.admin) {
@@ -249,8 +253,9 @@ module.exports = class Serv {
                 emit('s', ws.id, ...msg.slice(1));
             },
             vote: (ws, emit, msg) => {
-                let prop = this.votes[msg[0]]
-                if (prop) prop++;
+                let prop = this.votes;
+                if (prop[msg[0]]) prop[msg[0]]++;
+                ws.send('votes', this.votes)
             },
             guard: (ws, _, msg, emit) => {
                 let player = this.getPlayer(ws.id);
@@ -420,13 +425,13 @@ module.exports = class Serv {
                 if (this.objective > 4) this.objective = 0;
             }
 
-            if (this.time > -1) {
+            if (this.time >= 0) {
                 let funny = 817;
                 emit('t', this.time);
                 this.time--;
             }
 
-            if (this.time == 0) {
+            if (this.time < 0) {
                 let end = this.getPList().sort((a, b) => b.kill - a.kill);
 
                 emit('finish', end);
@@ -461,9 +466,7 @@ module.exports = class Serv {
                         })
                     })
 
-                    //this.map = (this.votes.Sierra > this.votes.Xibalba ? "Sierra" : "Xibalba");
-                    this.map = Math.random() * 2 | 0 ? "Sierra" : "Xibalba";
-                    emit('votes', this.votes)
+                    this.map = Object.entries(this.votes).sort((a,b)=> b[1] - a[1])[0][0];
                     emit("mode", "POINT", this.map)
 
                     this.votes = {
