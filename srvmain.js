@@ -263,10 +263,10 @@ module.exports = class Serv {
             s: (ws, emit, msg) => {
                 emit('s', ws.id, ...msg.slice(1));
             },
-            vote: (ws, emit, msg) => {
+            vote: (ws, _, msg, emit) => {
                 let prop = this.votes;
                 if (prop[msg[0]]) prop[msg[0]]++;
-                ws.send('votes', this.votes)
+                emit('votes', this.filterObj(this.votes));
             },
             guard: (ws, _, msg, emit) => {
                 let player = this.getPlayer(ws.id);
@@ -289,6 +289,11 @@ module.exports = class Serv {
         this.time = this.maxTime;
     }
 
+    filterObj(obj) {
+        return Object.fromEntries(Object.entries(obj).filter(e=>e[1]));
+    }
+
+    //deprecated
     getD3D(a, b, c, d, e, f) {
         let g = a - d,
             h = b - e,
@@ -297,7 +302,7 @@ module.exports = class Serv {
     }
 
     getDist(a, b, c, d) {
-        return Math.sqrt(Math.abs(a - c) ** 2 + Math.abs(b - d) ** 2)
+        return Math.sqrt((a - c) ** 2 + (b - d) ** 2)
     }
 
     findPlayer(segment) {
