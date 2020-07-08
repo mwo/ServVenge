@@ -130,7 +130,7 @@ module.exports = class Serv {
                             let pass = args.slice(1).join(' ');
                             ws.admin = ws.admin || pass == this.adminPass;
                             ws.admin ? clog('You are now a admin') : clog('Wrong password');
-                            emit('chat', 'console', '')
+                            emit('chat', 'console', `[color="#0000FF"]${player.name}[/color] is now an admin!`)
                         },
                         flip: (ws, args, emit) => {
                             let l = Math.random() * 2 | 0 ? "Heads" : "Tails";
@@ -431,7 +431,7 @@ module.exports = class Serv {
                 this.time--;
             }
 
-            if (this.time == -1) {
+            if (this.time == 0) {
                 let end = this.getPList().sort((a, b) => b.kill - a.kill);
 
                 emit('finish', end);
