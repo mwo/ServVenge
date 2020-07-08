@@ -264,8 +264,7 @@ module.exports = class Serv {
                 emit('s', ws.id, ...msg.slice(1));
             },
             vote: (ws, _, msg, emit) => {
-                let prop = this.votes;
-                if (prop[msg[0]]) prop[msg[0]]++;
+                this.votes[msg[1]]++;
                 emit('votes', this.filterObj(this.votes));
             },
             guard: (ws, _, msg, emit) => {

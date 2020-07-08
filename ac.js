@@ -160,6 +160,14 @@ class ssac {
             weapon: msg => {
                 //type check
                 this.check(msg, 'string', 'string');
+            },
+            vote: msg => {
+                //type check
+                this.check(msg, 'string', 'string');
+
+                //value check
+                let prop = msg[1];
+                if (prop != "Sierra" || prop != "Xibalba") this.isc(msg[0]);
             }
         }
 
