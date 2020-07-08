@@ -431,7 +431,7 @@ module.exports = class Serv {
                 this.time--;
             }
 
-            if (this.time < 0) {
+            if (this.time == -1) {
                 let end = this.getPList().sort((a, b) => b.kill - a.kill);
 
                 emit('finish', end);
