@@ -419,8 +419,14 @@ module.exports = class Serv {
 
     localLoop(ws) {
         setInterval(() => {
+            //var
             let player = this.getPlayer(ws.id);
-            if (player) player.inPoint = false;
+
+            //check if player exists
+            if (!player) return;
+
+            //points
+            player.inPoint = false;
 
             //health regen
             if (player.health < 100) player.lowhpc++;

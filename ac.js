@@ -17,7 +17,7 @@ Array.prototype.vector = function () {
 }
 
 class ssac {
-    constructor(ws, plr, callback, debug) {
+    constructor(ws, plr, callback, debug = ()=>{}) { //optional debugging callback
         //onsend aka incoming
         let send = ws.send;
         ws.send = (...args) => {
@@ -29,7 +29,7 @@ class ssac {
         this.ws = ws;
         this.callback = callback;
         this.log = debug;
-        this.immune = true; //for position stuff
+        this.immune = true; //so respawning doesn't trigger ac
 
         //actual player object from constructor
         this.plr = plr;
@@ -41,14 +41,17 @@ class ssac {
             },
             Scar: {
                 body: 15
+            },
+            "Tec-9": {
+                body: 15
+            },
+            Shotgun: {
+                body: 12
             }
         }
 
         //information tracking on player
         this.player = {
-            inAir: [], //used an array as a defualt value because they cannot be compared ex: [] == [] -> false
-            isEmote: [],
-            dashed: [],
             s: {
                 w: !1,
                 a: !1,
