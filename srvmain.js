@@ -130,7 +130,7 @@ module.exports = class Serv {
                             let pass = args.slice(1).join(' ');
                             ws.admin = ws.admin || pass == this.adminPass;
                             ws.admin ? clog('You are now a admin') : clog('Wrong password');
-                            emit('chat', 'console', `[color="#0000FF"]${player.name}[/color] is now an admin!`)
+                            emit('chat', 'console', `[color="#FF0000"]${player.name}[/color] is now an admin!`)
                         },
                         flip: (ws, args, emit) => {
                             let l = Math.random() * 2 | 0 ? "Heads" : "Tails";
@@ -179,14 +179,22 @@ module.exports = class Serv {
                             } else {
                                 clog('You do not have permission to use this command.')
                             }
+                        },
+                        sm: (w, args, emit) => {
+                            if (w.admin) {
+                                clog(args.slice(1).join(' '))
+                            } else {
+                                clog('You do not have permission to use this command.')
+                            }
                         }
                     }
 
-                    let args = info.slice(1).split(' ');
+                    //actual packet args
+                    let chat = info.slice(1).split(' ');
                     //console.log(args);
-                    let fnc = map[args[0]];
+                    let fnc = map[chat[0]];
                     if (fnc) {
-                        fnc(ws, args, emit)
+                        fnc(ws, chat, emit)
                     } else {
                         clog("Command does not exist.")
                     }
@@ -290,8 +298,11 @@ module.exports = class Serv {
     }
 
     findPlayer(segment) {
-        let key = Object.values(this.players).find(e => e.username ? e.username.includes(segment) : false).name;
-        return this.players[key] ? this.players[key] : null;
+        let obj =  Object.values(this.players).find(e => e.username ? e.username.includes(segment) : false);
+        if (!obj) return;
+        let key = obj.name,
+            ret = this.players[key];
+        return ret ? ret : null;
     }
 
     getPList() {

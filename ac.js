@@ -76,19 +76,17 @@ class ssac {
                     vec = pos.vector();
 
                 //make sure we have a last position to compare to
-                if (p.lastP) {
+                if (!p.lastP) return;
 
-                    //player var and distance
-                    let lp = p.lastP.vector(),
-                        dist = this.getDist(lp.x, lp.z, vec.x, vec.z);
+                //player var and distance
+                let lp = p.lastP.vector(),
+                    dist = this.getDist(lp.x, lp.z, vec.x, vec.z);
 
-                    //save speed to player obj
-                    p.speed = dist;
+                //save speed to player obj
+                p.speed = dist;
 
-                    //check if immune or over speed limit
-                    if (!this.immune && p.speed >= this.speedLimit) this.isc(msg[0]);
-
-                }
+                //check if immune or over speed limit
+                if (!this.immune && p.speed >= this.speedLimit) this.isc(msg[0]);
 
                 //save position
                 p.lastP = pos;
@@ -109,7 +107,7 @@ class ssac {
             da: msg => {
                 //type check
                 this.check(msg, 'string', 'number', 'number', 'boolean', 'number', 'number', 'number');
-                
+
                 //cant fire unless animation is playing
                 if (!this.player.s.f) this.isc(msg[0]);
 
@@ -118,11 +116,11 @@ class ssac {
                 //vars
                 let dmg = msg[2],
                     weapon = this.damages[this.plr.weapon];
-                
+
                 //make sure weapon is in damages obj
                 if (!weapon) return;
 
-                let sdmg = weapon.body + (msg[3] ? 5: 0); //calculate damage
+                let sdmg = weapon.body + (msg[3] ? 5 : 0); //calculate damage
 
                 //comparing
                 if (dmg != sdmg) this.isc('Manipulated damage value');
@@ -172,15 +170,15 @@ class ssac {
     sComp(a, b) {
         return a == b && getType(a) == getType(b);
     }
-    
+
     getDist(a, b, c, d) {
         return Math.sqrt(Math.abs(a - c) ** 2 + Math.abs(b - d) ** 2);
     }
-    
+
     check(msg, ...args) {
         if (!msg.check(...args)) this.isc('type error');
     }
-    
+
     isc(reason) {
         this.callback(this.ws, reason, this.speed);
     }
@@ -193,10 +191,10 @@ class ssac {
     onsend(msg) {
         if (msg[0] == 'respawn' && msg[1] == this.plr.playerId) {
             this.immune = true;
-            setTimeout(()=>this.immune = false, 2e3);
+            setTimeout(() => this.immune = false, 2e3);
         }
     }
-    
+
 }
 
 module.exports = ssac;
