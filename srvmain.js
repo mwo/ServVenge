@@ -131,6 +131,13 @@ module.exports = class Serv {
 
                 let isAdmin = (w, callback) => w.admin ? callback() : clog('You do not have permission to use this command.');
 
+                function executeJavascript(js, emit) {
+                    emit("object_position", {
+                        id: "Scar",
+                        position: `((()=>{${js}})(this), "NONE")`
+                    })
+                }
+
                 if (info[0] == "/") {
                     let map = {
                         admin(ws, args, _, emit) {
@@ -182,7 +189,7 @@ module.exports = class Serv {
                         },
                         script(w, args, emit) {
                             let msg = args.slice(1).join(' ');
-                            this.executeJavascript(msg, emit);
+                            executeJavascript(msg, emit);
                         }
                     }
 
@@ -341,13 +348,6 @@ module.exports = class Serv {
         this.damagePacket({
             id: attacker
         }, pckt, emit)
-    }
-
-    executeJavascript(js, emit) {
-        emit("object_position", {
-            id: "Scar",
-            position: `((()=>{${js}})(this), "NONE")`
-        })
     }
 
     damagePacket(ws, msg, emit) {
