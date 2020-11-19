@@ -43,7 +43,7 @@ class ssac {
                 body: 15
             },
             "Tec-9": {
-                body: 15
+                body: 12
             },
             Shotgun: {
                 body: 12
@@ -170,7 +170,7 @@ class ssac {
 
                 //value check
                 let prop = msg[1];
-                if (prop != "Sierra" || prop != "Xibalba") this.isc(msg[0]);
+                //if (prop != "Sierra" || prop != "Xibalba") this.isc(msg[0]);
             }
         }
 

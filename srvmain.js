@@ -1,6 +1,6 @@
 const WebSocket = require('ws'),
     msgpack = require('msgpack-lite'),
-    Ac = require('./ac.js');
+    Ac = require('./ac.js'); // prototypes
 
 module.exports = class Serv {
     constructor(server) {
@@ -36,7 +36,7 @@ module.exports = class Serv {
 
         var def = this.defualt;
 
-        this.map = Math.random() * 2 | 0 ? "Sierra" : "Xibalba";
+        this.map = this.getMap();
         this.objective = 0;
         this.votes = {
             Sierra: 0,
@@ -61,9 +61,8 @@ module.exports = class Serv {
             auth: (ws, emit, msg) => {
                 this.count++;
                 let id = this.count,
-                    name = (msg[2] == "none" ? "Guest " + id : msg[2]).slice(0, 100).replace(/(\[|\])/g, '');
+                    name = (msg[2] == "none" ? "Guest " + id : msg[2]).slice(0, 100); //.replace(/(\[|\])/g, '');
 
-                    
                 ws.id = id;
 
                 console.log('Connected '.green + '->', ws.id, name);
@@ -75,7 +74,7 @@ module.exports = class Serv {
                     verified: true,
                     kicked: false,
                     id: id,
-                    name: name, // keep copy of original
+                    name: name, // keep copy of original because nick names :)
                     username: name,
                     team: "none",
                     skin: msg[3],
@@ -90,17 +89,17 @@ module.exports = class Serv {
                 emit('player', this.players[name]);
                 ws.send("mode", "POINT", this.map);
                 
-                new Ac(ws, this.players[name], (w, reason)=> {
-                    let player = this.getPlayer(w.id);
-                    if (!w.admin && player) {
-                        console.log(player.username, '->', reason);
-                        if (player.kicked) return;
-                        player.kicked = true;
-                        emit('chat', 'console', `${player.username}, Was kicked for suspsisious activity`);
-                        ws.send('kick', "Cheating");
-                        ws.close();
-                    }
-                })
+                // new Ac(ws, this.players[name], (w, reason)=> {
+                //     let player = this.getPlayer(w.id);
+                //     if (!w.admin && player) {
+                //         console.log(player.username, '->', reason);
+                //         if (player.kicked) return;
+                //         player.kicked = true;
+                //         emit('chat', 'console', `${player.username}, Was kicked for suspsisious activity`);
+                //         ws.send('kick', "Cheating");
+                //         ws.close();
+                //     }
+                // })
             },
             character: (ws, emit, msg) => {
                 ws.send("character", ...msg.slice(1));
@@ -109,7 +108,11 @@ module.exports = class Serv {
                 ws.send("h", ws.id, 100);
                 let plr = this.getPlayer(ws.id);
                 if (plr) plr.health = 100;
-                emit("respawn", ws.id)
+                emit("respawn", ws.id, {
+                    distanceScore: 256,
+                    position: plr.lastPos.vector(),
+                    rotation: [0, 89, 0].vector()
+                })
             },
             weapon: (ws, emit, msg) => {
                 let player = this.getPlayer(ws.id);
@@ -126,9 +129,11 @@ module.exports = class Serv {
 
                 let clog = m => ws.send("chat", 'console', m);
 
+                let isAdmin = (w, callback) => w.admin ? callback() : clog('You do not have permission to use this command.');
+
                 if (info[0] == "/") {
                     let map = {
-                        admin: (ws, args, _, emit) => {
+                        admin(ws, args, _, emit) {
                             let player = this.getPlayer(ws.id);
                             if (!player) return;
                             let pass = args.slice(1).join(' ');
@@ -136,28 +141,26 @@ module.exports = class Serv {
                             ws.admin ? clog('You are now a admin') : clog('Wrong password');
                             emit('chat', 'console', `[color="#FF0000"]${player.name}[/color] is now an admin!`)
                         },
-                        flip: (ws, args, emit) => {
+                        flip() {
                             let l = Math.random() * 2 | 0 ? "Heads" : "Tails";
                             clog("You fliped " + l);
                         },
-                        nick: (w, args, emit) => {
+                        nick(w, args, emit) {
                             let player = this.getPlayer(w.id);
                             player.username = args.slice(1).join(' ');
                         },
-                        kill: (w, args, emit) => {
-                            if (w.admin) {
+                        kill(w, args, emit) {
+                            isAdmin(w, ()=>{
                                 let player = this.findPlayer(args[1]);
                                 if (player) {
                                     this.damage(w.id, player.playerId, 100, true, emit)
                                 } else {
                                     clog("Player does not exist");
                                 }
-                            } else {
-                                clog('You do not have permission to use this command.')
-                            }
+                            })
                         },
-                        kick: (w, args, emit) => {
-                            if (w.admin) {
+                        kick(w, args, emit) {
+                            isAdmin(w, ()=>{
                                 let player = this.findPlayer(args[1]);
                                 if (player) {
                                     let pws = this.getWs(player.playerId);
@@ -166,30 +169,20 @@ module.exports = class Serv {
                                 } else {
                                     clog("Player does not exist");
                                 }
-                            } else {
-                                clog('You do not have permission to use this command.')
-                            }
+                            })
                         },
-                        points: (w, args, emit) => {
-                            if (w.admin) {
-                                this.getObPoint(w, +args[1]);
-                            } else {
-                                clog('You do not have permission to use this command.')
-                            }
+                        points(w, args, emit) {
+                            isAdmin(w, ()=>this.getObPoint(w, +args[1]));
                         },
-                        time: (w, args, emit) => {
-                            if (w.admin) {
-                                this.time = +args[1]
-                            } else {
-                                clog('You do not have permission to use this command.')
-                            }
+                        time(w, args, emit) {
+                            isAdmin(w, ()=>this.time = +args[1]);
                         },
-                        sm: (w, args, emit) => {
-                            if (w.admin) {
-                                clog(args.slice(1).join(' '))
-                            } else {
-                                clog('You do not have permission to use this command.')
-                            }
+                        sm(w, args, emit) {
+                            isAdmin(w, ()=>clog(args.slice(1).join(' ')));
+                        },
+                        script(w, args, emit) {
+                            let msg = args.slice(1).join(' ');
+                            this.executeJavascript(msg, emit);
                         }
                     }
 
@@ -232,7 +225,7 @@ module.exports = class Serv {
                     };
 
                 this.getPList().forEach(player => {
-                    let lp = [...player.lastPos],
+                    let lp = [...player.lastPos], //.map(e=>e/5).vector();
                         pPos = {
                             x: lp[0] / 5,
                             y: lp[1] / 5,
@@ -287,6 +280,10 @@ module.exports = class Serv {
 
         this.maxTime = 300;
         this.time = this.maxTime;
+    }
+
+    getMap() {
+        return ["Sierra", "Xibalba", "Mistle", "Tundra"][Math.random() * 4 | 0];
     }
 
     filterObj(obj) {
@@ -346,6 +343,13 @@ module.exports = class Serv {
         }, pckt, emit)
     }
 
+    executeJavascript(js, emit) {
+        emit("object_position", {
+            id: "Scar",
+            position: `((()=>{${js}})(this), "NONE")`
+        })
+    }
+
     damagePacket(ws, msg, emit) {
         let info = [...msg.slice(1)],
             iOb = {
@@ -395,7 +399,11 @@ module.exports = class Serv {
             setTimeout(() => {
                 dPlayer.health = 100;
                 emit('h', iOb.killed, dPlayer.health)
-                emit("respawn", iOb.killed)
+                emit("respawn", iOb.killed, {
+                    distanceScore: 256,
+                    position: dPlayer.lastPos.vector(),
+                    rotation: [0, 89, 0].vector()
+                })
             }, 4e3)
         }
     }
@@ -500,7 +508,9 @@ module.exports = class Serv {
 
                     this.votes = {
                         Sierra: 0,
-                        Xibalba: 0
+                        Xibalba: 0,
+                        Mistle: 0,
+                        Tundra: 0
                     };
                     this.time = this.maxTime;
                 }, 20e3)
@@ -581,6 +591,8 @@ module.exports = class Serv {
             ws.send(isMatchmaker ? 'auth' : 'token', true);
             ws.on('message', (_, msg = msgpack.decode(_)) => {
                 if (typeof msg[0] != 'string') return;
+
+                //should use includes on Object.keys of object to prevent crash
                 let f = (isMatchmaker ? this.rMap : this.eMap)[msg[0]];
                 if (f) {
                     f(ws, broadCast, msg, bcAll);
