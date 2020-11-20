@@ -91,9 +91,9 @@ module.exports = class Serv {
                 
 
                 //spawn lol
-                ws.send("respawn", ws.id, {
+                ws.send("respawn", ws.id, { //keep in mind that they are multple spawns. Just use a random mechanism on them
                     distanceScore: 256,
-                    position: [-22.38473129272461, 300.264860153198242, -12.864980697631836].vector(),
+                    position: {x: -31.554325103759766, y: 100.898055076599121, z: -125.45069885253906},
                     rotation: [0, 89, 0].vector()
                 })
                 // new Ac(ws, this.players[name], (w, reason)=> {
