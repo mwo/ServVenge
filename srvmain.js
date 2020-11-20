@@ -117,7 +117,7 @@ module.exports = class Serv {
                 if (plr) plr.health = 100;
                 emit("respawn", ws.id, {
                     distanceScore: 256,
-                    position: plr.lastPos.vector(),
+                    position: plr.lastPos.map(e=>e/5).vector(),
                     rotation: [0, 89, 0].vector()
                 })
             },
@@ -408,7 +408,7 @@ module.exports = class Serv {
                 emit('h', iOb.killed, dPlayer.health)
                 emit("respawn", iOb.killed, {
                     distanceScore: 256,
-                    position: dPlayer.lastPos.vector(),
+                    position: dPlayer.lastPos.map(e=>e/5).vector(),
                     rotation: [0, 89, 0].vector()
                 })
             }, 4e3)
