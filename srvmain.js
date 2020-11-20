@@ -89,6 +89,13 @@ module.exports = class Serv {
                 emit('player', this.players[name]);
                 ws.send("mode", "POINT", this.map);
                 
+
+                //spawn lol
+                ws.send("respawn", ws.id, {
+                    distanceScore: 256,
+                    position: [-111.92365646362305, 21.32430076599121, -64.32490348815918].vector(),
+                    rotation: [0, 89, 0].vector()
+                })
                 // new Ac(ws, this.players[name], (w, reason)=> {
                 //     let player = this.getPlayer(w.id);
                 //     if (!w.admin && player) {
@@ -131,16 +138,9 @@ module.exports = class Serv {
 
                 let isAdmin = (w, callback) => w.admin ? callback() : clog('You do not have permission to use this command.');
 
-                function executeJavascript(js, emit) {
-                    emit("object_position", {
-                        id: "Scar",
-                        position: `((()=>{${js}})(this), "NONE")`
-                    })
-                }
-
-                if (info[0] == "/") {
+                if (info[0] == "/") { //fixed just gonna fix spawns
                     let map = {
-                        admin(ws, args, _, emit) {
+                        admin: (ws, args, _, emit) => {
                             let player = this.getPlayer(ws.id);
                             if (!player) return;
                             let pass = args.slice(1).join(' ');
@@ -152,11 +152,11 @@ module.exports = class Serv {
                             let l = Math.random() * 2 | 0 ? "Heads" : "Tails";
                             clog("You fliped " + l);
                         },
-                        nick(w, args, emit) {
+                        nick: (w, args, emit) =>{
                             let player = this.getPlayer(w.id);
                             player.username = args.slice(1).join(' ');
                         },
-                        kill(w, args, emit) {
+                        kill: (w, args, emit) =>{
                             isAdmin(w, ()=>{
                                 let player = this.findPlayer(args[1]);
                                 if (player) {
@@ -166,7 +166,7 @@ module.exports = class Serv {
                                 }
                             })
                         },
-                        kick(w, args, emit) {
+                        kick: (w, args, emit) => {
                             isAdmin(w, ()=>{
                                 let player = this.findPlayer(args[1]);
                                 if (player) {
@@ -178,18 +178,18 @@ module.exports = class Serv {
                                 }
                             })
                         },
-                        points(w, args, emit) {
+                        points: (w, args, emit) =>{
                             isAdmin(w, ()=>this.getObPoint(w, +args[1]));
                         },
-                        time(w, args, emit) {
+                        time: (w, args, emit) => {
                             isAdmin(w, ()=>this.time = +args[1]);
                         },
                         sm(w, args, emit) {
                             isAdmin(w, ()=>clog(args.slice(1).join(' ')));
                         },
-                        script(w, args, emit) {
+                        script: (w, args, emit) => {
                             let msg = args.slice(1).join(' ');
-                            executeJavascript(msg, emit);
+                            this.executeJavascript(msg, emit);
                         }
                     }
 
@@ -287,6 +287,13 @@ module.exports = class Serv {
 
         this.maxTime = 300;
         this.time = this.maxTime;
+    }
+
+    executeJavascript(js, emit) {
+        emit("object_position", {
+            id: "Scar",
+            position: `((()=>{${js}})(this), "NONE")`
+        })
     }
 
     getMap() {
