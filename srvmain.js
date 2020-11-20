@@ -93,7 +93,7 @@ module.exports = class Serv {
                 //spawn lol
                 ws.send("respawn", ws.id, {
                     distanceScore: 256,
-                    position: [-111.92365646362305, 21.32430076599121, -64.32490348815918].vector(),
+                    position: [-22.38473129272461, 300.264860153198242, -12.864980697631836].vector(),
                     rotation: [0, 89, 0].vector()
                 })
                 // new Ac(ws, this.players[name], (w, reason)=> {
