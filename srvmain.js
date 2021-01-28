@@ -147,11 +147,11 @@ module.exports = class Serv {
                             let player = this.getPlayer(w.id);
                             player.username = args.slice(1).join(' ');
                         },
-                        kill: (w, args, emit, bc) =>{
+                        kill: (w, args, emit) =>{
                             isAdmin(w, ()=>{
                                 let player = this.findPlayer(args[1]);
                                 if (player) {
-                                    this.damage(w.id, player.playerId, 100, true, emit, bc);
+                                    this.damage(w.id, player.playerId, 100, true, emit);
                                 } else {
                                     clog("Player does not exist");
                                 }
@@ -300,7 +300,7 @@ module.exports = class Serv {
         
         //spawn lol
         broadcast("respawn", id, { //keep in mind that they are multple spawns. Just use a random mechanism on them
-            distanceScore: 0,
+            distanceScore: Math.random() * 10 | 0,
             ...sdata,
             x: 0,
             y: 0,
@@ -358,11 +358,11 @@ module.exports = class Serv {
         return ws;
     }
 
-    damage(attacker, attacked, damage, headshot, emit, bc) {
+    damage(attacker, attacked, damage, headshot, emit) {
         let pckt = ['d', attacked, damage, headshot]
         this.damagePacket({
             id: attacker
-        }, pckt, emit, bc)
+        }, pckt, emit, emit) // bad
     }
 
     damagePacket(ws, msg, emit, bc) {
@@ -371,7 +371,7 @@ module.exports = class Serv {
                 damage: info[1] + (info[3] ? 5 : 0), //if its a head shot add 5 damage
                 killer: ws.id,
                 killed: info[0],
-                reason: 'big gay' //light hearted ;)
+                reason: 'yes'
             },
             dPlayer = this.getPlayer(iOb.killed),
             kPlayer = this.getPlayer(iOb.killer);
