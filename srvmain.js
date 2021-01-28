@@ -90,7 +90,7 @@ module.exports = class Serv {
                 ws.send("mode", "POINT", this.map);
                 
                 //spawn
-//                 this.setspawn(broadcast, ws.id);
+                this.setspawn(broadcast, ws.id);
                 // new Ac(ws, this.players[name], (w, reason)=> {
                 //     let player = this.getPlayer(w.id);
                 //     if (!w.admin && player) {
@@ -365,7 +365,7 @@ module.exports = class Serv {
         }, pckt, emit)
     }
 
-    damagePacket(ws, msg, emit) {
+    damagePacket(ws, msg, emit, bc) {
         let info = [...msg.slice(1)],
             iOb = {
                 damage: info[1] + (info[3] ? 5 : 0), //if its a head shot add 5 damage
@@ -414,11 +414,12 @@ module.exports = class Serv {
             setTimeout(() => {
                 dPlayer.health = 100;
                 emit('h', iOb.killed, dPlayer.health)
-                emit("respawn", iOb.killed, {
-                    distanceScore: 256,
-                    position: dPlayer.lastPos.map(e=>e/5).vector(),
-                    rotation: [0, 89, 0].vector()
-                })
+//                 emit("respawn", iOb.killed, {
+//                     distanceScore: 256,
+//                     position: dPlayer.lastPos.map(e=>e/5).vector(),
+//                     rotation: [0, 89, 0].vector()
+//                 })
+               this.setspawn(bc, iOb.killed);
             }, 4e3)
         }
     }
