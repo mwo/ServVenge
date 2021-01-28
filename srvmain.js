@@ -90,7 +90,7 @@ module.exports = class Serv {
                 ws.send("mode", "POINT", this.map);
                 
                 //spawn
-                this.setspawn(broadcast, ws.id);
+//                 this.setspawn(broadcast, ws.id);
                 // new Ac(ws, this.players[name], (w, reason)=> {
                 //     let player = this.getPlayer(w.id);
                 //     if (!w.admin && player) {
