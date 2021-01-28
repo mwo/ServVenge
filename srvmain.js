@@ -147,11 +147,11 @@ module.exports = class Serv {
                             let player = this.getPlayer(w.id);
                             player.username = args.slice(1).join(' ');
                         },
-                        kill: (w, args, emit) =>{
+                        kill: (w, args, emit, bc) =>{
                             isAdmin(w, ()=>{
                                 let player = this.findPlayer(args[1]);
                                 if (player) {
-                                    this.damage(w.id, player.playerId, 100, true, emit)
+                                    this.damage(w.id, player.playerId, 100, true, emit, bc);
                                 } else {
                                     clog("Player does not exist");
                                 }
@@ -238,8 +238,8 @@ module.exports = class Serv {
                     }
                 })
             },
-            da: (ws, _, msg, emit) => {
-                this.damagePacket(ws, msg, emit)
+            da: (ws, _, msg, emit, bc) => {
+                this.damagePacket(ws, msg, emit. bc)
             },
             p: (ws, emit, msg, bc) => {
                 let info = [...msg.slice(1)],
@@ -358,11 +358,11 @@ module.exports = class Serv {
         return ws;
     }
 
-    damage(attacker, attacked, damage, headshot, emit) {
+    damage(attacker, attacked, damage, headshot, emit, bc) {
         let pckt = ['d', attacked, damage, headshot]
         this.damagePacket({
             id: attacker
-        }, pckt, emit)
+        }, pckt, emit, bc)
     }
 
     damagePacket(ws, msg, emit, bc) {
