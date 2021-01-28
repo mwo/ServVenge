@@ -241,13 +241,13 @@ module.exports = class Serv {
             da: (ws, _, msg, emit) => {
                 this.damagePacket(ws, msg, emit)
             },
-            p: (ws, emit, msg) => {
+            p: (ws, emit, msg, bc) => {
                 let info = [...msg.slice(1)],
                     author = this.getPlayer(ws.id);
                 if (author) {
                     author.lastPos = info.slice(0, 3);
                 }
-                emit('p', ws.id, ...info);
+                bc('p', ws.id, ...info);
             },
             e: (ws, emit, msg) => {
                 emit('e', ws.id, ...msg.slice(1));
@@ -292,12 +292,16 @@ module.exports = class Serv {
     }
     
     setspawn(broadcast, id){
-        var mapSpawns = this.spawns[this.map];
-                
+        var mapSpawns = this.spawns[this.map],
+            author = this.getPlayer(id),
+            sdata = mapSpawns[Math.random() * mapSpawns.length | 0];
+        
+        author.lastPos = sdata.position;
+        
         //spawn lol
         broadcast("respawn", id, { //keep in mind that they are multple spawns. Just use a random mechanism on them
-            distanceScore: 256,
-            ...(mapSpawns[Math.random() * mapSpawns.length | 0]),
+            distanceScore: 0,
+            ...sdata,
             x: 0,
             y: 0,
             z: 0
