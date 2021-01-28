@@ -58,7 +58,7 @@ module.exports = class Serv {
         }
         
         this.eMap = {
-            auth: (ws, emit, msg) => {
+            auth: (ws, emit, msg, broadcast) => {
                 this.count++;
                 let id = this.count,
                     name = (msg[2] == "none" ? "Guest " + id : msg[2]).slice(0, 100); //.replace(/(\[|\])/g, '');
@@ -89,16 +89,8 @@ module.exports = class Serv {
                 emit('player', this.players[name]);
                 ws.send("mode", "POINT", this.map);
                 
-                var mapSpawns = this.spawns[this.map];
-                
-                //spawn lol
-                emit("respawn", ws.id, { //keep in mind that they are multple spawns. Just use a random mechanism on them
-                    distanceScore: 256,
-                    ...(mapSpawns[Math.random() * mapSpawns.length | 0]),
-                    x: 0,
-                    y: 0,
-                    z: 0
-                });
+                //spawn
+                this.setspawn(broadcast, ws.id);
                 // new Ac(ws, this.players[name], (w, reason)=> {
                 //     let player = this.getPlayer(w.id);
                 //     if (!w.admin && player) {
@@ -114,15 +106,11 @@ module.exports = class Serv {
             character: (ws, emit, msg) => {
                 ws.send("character", ...msg.slice(1));
             },
-            respawn: (ws, emit, msg) => {
+            respawn: (ws, emit, msg, broadcast) => {
                 ws.send("h", ws.id, 100);
                 let plr = this.getPlayer(ws.id);
                 if (plr) plr.health = 100;
-                emit("respawn", ws.id, {
-                    distanceScore: 256,
-                    position: plr.lastPos.map(e=>e/5).vector(),
-                    rotation: [0, 89, 0].vector()
-                })
+                this.setspawn(broadcast, ws.id);
             },
             weapon: (ws, emit, msg) => {
                 let player = this.getPlayer(ws.id);
@@ -301,6 +289,19 @@ module.exports = class Serv {
 
     getMap() {
         return this.amaps[Math.random() * this.spawns.length | 0];
+    }
+    
+    setspawn(broadcast, id){
+        var mapSpawns = this.spawns[this.map];
+                
+        //spawn lol
+        broadcast("respawn", id, { //keep in mind that they are multple spawns. Just use a random mechanism on them
+            distanceScore: 256,
+            ...(mapSpawns[Math.random() * mapSpawns.length | 0]),
+            x: 0,
+            y: 0,
+            z: 0
+        });
     }
 
     filterObj(obj) {
