@@ -107,10 +107,10 @@ module.exports = class Serv {
                 ws.send("character", ...msg.slice(1));
             },
             respawn: (ws, emit, msg, broadcast) => {
-                ws.send("h", ws.id, 100);
-                let plr = this.getPlayer(ws.id);
-                if (plr) plr.health = 100;
-                this.setspawn(broadcast, ws.id);
+//                 ws.send("h", ws.id, 100);
+//                 let plr = this.getPlayer(ws.id);
+//                 if (plr) plr.health = 100;
+//                 this.setspawn(broadcast, ws.id);
             },
             weapon: (ws, emit, msg) => {
                 let player = this.getPlayer(ws.id);
@@ -460,13 +460,14 @@ module.exports = class Serv {
 
     startGame(emit) {
         setInterval(() => {
+            var plist = this.getPList();
             //time
             if (this.time == this.maxTime) {
                 emit('start');
             }
 
             if (!(this.time % 30)) {
-                let iPoints = this.getPList().filter(e => e.inPoint).forEach(player => {
+                let iPoints = plist.filter(e => e.inPoint).forEach(player => {
                     let aScore = 30;
                     player.score += aScore;
                     player.totalCardPoint += aScore;
@@ -485,7 +486,7 @@ module.exports = class Serv {
             }
 
             if (this.time == 0) {
-                let end = this.getPList().sort((a, b) => b.kill - a.kill);
+                let end = plist.sort((a, b) => b.kill - a.kill);
 
                 emit('finish', end);
 
@@ -513,21 +514,21 @@ module.exports = class Serv {
                     }
 
                     //set the keys
-                    this.getPList().forEach(player => {
+                    plist.forEach(player => {
                         Object.keys(rObj).forEach(e => {
                             player[e] = rObj[e];
                         })
                     })
 
                     this.map = Object.entries(this.votes).sort((a,b)=> b[1] - a[1])[0][0];
-                    emit("mode", "POINT", this.map)
+                    emit("mode", "POINT", this.map);
+                    
+                    plist.forEach(player=>{
+                        this.setspawn(emit, player.id);
+                    })
 
-                    this.votes = {
-                        Sierra: 0,
-                        Xibalba: 0,
-                        Mistle: 0,
-                        Tundra: 0
-                    };
+                    this.votes = Object.fromEntries(this.amaps.map(e=>[e,0]));
+                    
                     this.time = this.maxTime;
                 }, 20e3)
             }
