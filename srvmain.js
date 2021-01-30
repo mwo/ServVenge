@@ -296,7 +296,7 @@ module.exports = class Serv {
             author = this.getPlayer(id),
             sdata = mapSpawns[Math.random() * mapSpawns.length | 0];
         
-        author.lastPos = sdata.position;
+        author.lastPos = [sdata.position.x,sdata.position.y,sdata.position.z].map(e=>e*5); //encode
         
         //spawn lol
         broadcast("respawn", id, { //keep in mind that they are multple spawns. Just use a random mechanism on them
